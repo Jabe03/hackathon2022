@@ -1,3 +1,4 @@
+import os
 import time
 from getpass import getpass
 
@@ -20,9 +21,16 @@ class Plotter:
 
 
 def main():
-    login = open("login.txt")
+    rel_path = "../back/logins/login.txt"
+    login = open(rel_path)
+
+    user = login.readline()[:-1];
+
+    pw = login.readline()[:-1];
+
+
     connection = requests.get('https://itsnt2259.iowa.uiowa.edu/piwebapi/search/query?q=name:PP_BLR12_FT_006_KSCFH',
-                              auth=(login.readline(), login.readline()))
+                              auth=(user, pw))
 
     print(connection.text);
 
