@@ -1,0 +1,88 @@
+body {
+    background: rgba(245,247,248,255);
+    background-repeat: no-repeat;
+    background-attachment: fixed;  
+    background-size: cover;
+  }
+  img{
+    position: "top right";
+  }
+
+  /*Button*/
+
+  
+  .button {
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    float: right;
+  }
+  
+  .button1 {
+    background-color: white;
+    color: black;
+    border: 2px solid #5a49e4;
+  }
+  
+  .button1:hover {
+    background-color: #5a49e4;
+    color: white;
+  }
+  
+  .button2 {
+    background-color: white;
+    color: black;
+    border: 2px solid #5a49e4;
+  }
+  
+  .button2:hover {
+    background-color: #5a49e4;
+    color: white;
+  }
+
+  .button3 {
+    background-color: white;
+    color: black;
+    border: 2px solid #5a49e4;
+  }
+  
+  .button3:hover {
+    background-color: #5a49e4;
+    color: white;
+  }
+  
+
+/*Text*/
+
+  h1 {
+    text-align: center;
+    color: black;
+    font-weight:900;
+    font-stretch: ultra-expanded;
+    font-family: Impact, fantasy
+  }
+  
+  p {
+    text-align: center;
+    color: black;
+    font-weight:900;
+    font-stretch: ultra-expanded;
+    font-family: Impact, fantasy
+  }
+  
+  a{
+    text-align: center;
+    color: black;
+    font-weight:900;
+    font-stretch: ultra-expanded;
+    font-family: Impact, fantasy
+  }
+  
+  
