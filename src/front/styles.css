@@ -6,6 +6,9 @@ body {
   }
   img{
     position:"absolute";
+    max-width: 100%;
+    height: auto;
+    width: auto\9;
   }
 
   /*Button*/
