@@ -5,13 +5,10 @@ body {
     background-size: cover;
   }
   img{
-    position:"fixed";
+    position:"absolute";
   }
 
   /*Button*/
-
-  
-  
   .button {
     border: none;
     color: white;
