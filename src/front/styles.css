@@ -5,7 +5,7 @@ body {
     background-size: cover;
   }
   img{
-    position: "top right";
+    position:"fixed";
   }
 
   /*Button*/
