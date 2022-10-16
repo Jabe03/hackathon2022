@@ -4,26 +4,27 @@ body {
     background-attachment: fixed;  
     background-size: cover;
   }
-  img{
-    position:"fixed";
+  .img{
+    position:"absolute";
+    max-width: 100%;
+    height: auto;
+    width: auto\9;
   }
 
   /*Button*/
-
-  
-  
   .button {
     border: none;
     color: white;
-    padding: 8px 15px;
+    padding: 8px 20px;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 6px 10px;
     transition-duration: 0.4s;
     cursor: pointer;
+    display: block;
     float: right;
+  
   }
   
   .button1 {
@@ -89,4 +90,47 @@ body {
     font-family: Impact, fantasy
   }
   
-  
+  .center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+  }
+
+  .right{
+    display: block;
+    margin-right: auto;
+    float: right;
+    position:absolute;
+    right: 170px;
+    top:110px;
+    margin: auto;
+  }
+
+  .left{
+    display: block;
+    margin-left: auto;
+    float:left;
+    position: absolute;
+    top:150px;
+    left: 70px;
+    margin: auto;
+  }
+  .lower{
+    display: block;
+    margin-left: auto;
+    float:left;
+    top:350px;
+    left: 20px;
+    position: absolute;
+    margin: auto;
+  }
+
+  .logo{
+    margin-left: auto;
+    float:left;
+    bottom:10px;
+    right: 20px;
+    position: absolute;
+    margin: auto;
+  }
