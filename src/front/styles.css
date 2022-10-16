@@ -18,11 +18,11 @@ body {
     padding: 8px 15px;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
     font-size: 16px;
     margin: 4px 2px;
     transition-duration: 0.4s;
     cursor: pointer;
+    display: block;
     float: right;
   }
   
@@ -100,20 +100,21 @@ body {
     display: block;
     margin-right: auto;
     float: right;
-    position:relative;
-    bottom: 40px;
+    position:absolute;
+    right: 170px;
+    top:100px;
   }
 
   .left{
     display: block;
     margin-left: auto;
     float:left;
-    position: fixed;
+    position: absolute;
   }
   .lower{
     display: block;
     margin-left: auto;
     float:left;
-    top: 270px;
-    position: fixed;
+    top:320px;
+    position: absolute;
   }
