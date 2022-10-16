@@ -1,22 +1,24 @@
 import numpy as np 
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
-def main():
+fig, ax = plt.subplots()
 
-    xaxis =[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
-    yaxis =[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-  
-# plotting 
-    plt.plot(xaxis, yaxis)
-    plt.xlabel("X")
-    plt.ylabel("Y")
-  
-# saving the file.Make sure you 
-# use savefig() before show().
-    plt.savefig("squares.png")
-  
-    plt.show()
+year_1 = [2016, 2017, 2018, 2019, 2020, 2021]
+population_1 = [42, 43, 45, 47, 48, 50]
+
+year_2 = [2016, 2017, 2018, 2019, 2020, 2021]
+population_2 = [43, 43, 44, 44, 45, 45]
+
+plt.plot(year_1, population_1, marker='o', linestyle='--', color='g', label='Country 1')
+plt.plot(year_2, population_2,  marker='d', linestyle='-', color='r', label='Country 2')
+
+plt.xlabel('Year')
+plt.ylabel('Population (M)')
+plt.title('Year vs Population')
+plt.legend(loc='lower right')
+
+fig
 
 
 if (__name__ == "__main__"):
-    main()
+    pass
