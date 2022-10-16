@@ -95,3 +95,25 @@ body {
     margin-right: auto;
     width: 50%;
   }
+
+  .right{
+    display: block;
+    margin-right: auto;
+    float: right;
+    position:relative;
+    bottom: 40px;
+  }
+
+  .left{
+    display: block;
+    margin-left: auto;
+    float:left;
+    position: fixed;
+  }
+  .lower{
+    display: block;
+    margin-left: auto;
+    float:left;
+    top: 270px;
+    position: fixed;
+  }
