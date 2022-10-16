@@ -110,6 +110,8 @@ body {
     margin-left: auto;
     float:left;
     position: absolute;
+    top:120px;
+    left: 60px;
   }
   .lower{
     display: block;
