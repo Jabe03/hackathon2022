@@ -13,21 +13,14 @@ class Main:
         datetime.datetime(2022, 1, 19): .5,
         datetime.datetime(2022, 1, 24): .625,
         datetime.datetime(2022, 6, 1): .285,
-        datetime.datetime(3000, 12, 31): .375,
+        datetime.datetime(2022, 8, 29): .375,
 
     }
 
 
-    def get_ratio_from_date(self, dt):
-        lastdate = datetime.datetime()
-        for change_date in self.dates_to_ratio.__reversed__():
-            if dt > change_date:
-                return self.dates_to_ratio[change_date];
-            lastdate = change_date
-
-        return self.dates_to_ratio[lastdate];
 
 
 
 main = Main()
-print(main.get_ratio_from_date())
+
+print(main.get_ratio_from_date(datetime.datetime(2016, 12, 22)))
