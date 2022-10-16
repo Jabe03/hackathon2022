@@ -123,9 +123,21 @@ class Reader:
     user = ""
     pw = ""
     page_get_counter = 0;
+
+    start_time = 0;
     def __init__(self):
         self.get_user_info()
 
+    def start_timer(self):
+        self.start_time = time.time()*1000;
+
+    def get_elapsed(self):
+        result = time.time()*1000 - self.start_time;
+        start = time.time()
+        return result
+
+    def print_elapsed_time(self,msg):
+        print(msg + " elapsed in: " + str(self.get_elapsed()));
     def get_user_info(self):
         login = open(self.rel_path)
 
@@ -185,6 +197,7 @@ class Reader:
         return 1
 
     def day_sum_gas_consumption(self, gas_type, days_ago):
+
         factor = self.get_factor(gas_type)
         recorded_url = 'recorded/?startTime=-{}d&endTime=-{}d'.format(days_ago, days_ago + 1)
         interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago, days_ago + 1)
@@ -192,6 +205,7 @@ class Reader:
         response = self.get_page_json(self.root_url + gas_type)
 
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
+
         if gas_type[0:2] != "gg":
             response = self.get_page_json(
                 response["Links"]["InterpolatedData"].replace('interpolated', interpolation_url))
@@ -216,18 +230,24 @@ class Reader:
 
         # print(gas_type + ": " + str(sum) + "(factor: " + str(factor) + ")")
         # CHANGE
+
         # print('Gas number '+ str((sum + self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(days_ago)) * self.gas_conversion_factor))
-        return (sum + self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(
-            days_ago)) * self.gas_conversion_factor
+
+        result = (sum) * self.gas_conversion_factor
+
+
+        return result
 
     def sum_yearly_gas_emissions(self):
         pass
 
     def sum_one_oakdale_boiler(self, boiler, days_ago):
+
         interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1d'.format(days_ago, days_ago + 1)
         response = self.get_page_json(self.root_url + boiler)
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
         response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated', interpolation_url))
+
         items = response["Items"]
         return items[0]["Value"] * 24
         sum = 0;
@@ -245,11 +265,32 @@ class Reader:
         for boiler in self.oakdale_gas_points_dict:
             sum += self.sum_one_oakdale_boiler(self.oakdale_gas_points_dict[boiler], days_ago)
 
-        return sum / 0.8 * 1.07
+        return sum / 0.8 * 1.07 * self.gas_conversion_factor
 
     def oakdale_gas_engine_consumption(self, days_ago):
-        interpolated_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago, days_ago + 1)
+
+        interpolated_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1d'.format(0, days_ago + 1)
         response = self.get_page_json(self.root_url + "Oak_FIT041")
+
+        response = self.get_page_json(response["Items"][0]["Links"]["Self"])
+
+        response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated', interpolated_url))
+
+        items = response["Items"]
+        sum = 0;
+        for i in range(1, len(items)):
+            item = items[i]["Value"]
+
+            if item < 0:
+                item = 0
+
+            sum = sum + item
+
+        return sum * 24 * self.gas_conversion_factor
+
+    def sum_daily_pellets_consumption(self,days_ago):
+        interpolated_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1d'.format(0, days_ago + 1)
+        response = self.get_page_json(self.root_url + "PP_CHS_B10WeighBelt_MvgAvg")
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
         response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated', interpolated_url))
 
@@ -262,25 +303,8 @@ class Reader:
                 item = 0
 
             sum = sum + item
-        return sum
-
-    def sum_daily_pellets_consumption(self):
-
-        response = self.get_page_json(self.root_url + "PP_CHS_B10WeighBelt_MvgAvg")
-        response = self.get_page_json(response["Items"][0]["Links"]["Self"])
-        response = self.get_page_json(response["Links"]["InterpolatedData"])
-
-        items = response["Items"]
-        sum = 0;
-        for i in range(1, len(items)):
-            item = items[i]["Value"]
-
-            if item < 0:
-                item = 0
-
-            sum = sum + item
         # print("Thousands of pounds of pellets total: " + str(sum))
-        return sum / 2 * self.pellet_conversion_factor
+        return sum / 2 * self.pellet_conversion_factor * 24
 
     def extract_datetime_from_timestamp(self, timestamp: str):
         year = int(timestamp[0:4])
@@ -289,7 +313,7 @@ class Reader:
         return datetime.datetime(year, month, day)
 
     def sum_daily_coal_and_pellet_consumption(self, days_ago):
-        interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago, days_ago + 1)
+        interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1d'.format(0, days_ago + 1)
         response = self.get_page_json(self.root_url + "PP_SF-WIT-6044A")
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
         response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated', interpolation_url))
@@ -301,54 +325,61 @@ class Reader:
         for i in range(1, len(items)):
             item = items[i]["Value"]
             date = self.extract_datetime_from_timestamp(items[i]["Timestamp"])
+            #print("Item: " + str(item))
+            if type(item) is float:
+                if item < 0:
+                    item = 0
+                ratio = self.get_ratio_from_date(date)
 
-            if item < 0:
-                item = 0
-            ratio = self.get_ratio_from_date(date)
+                pellets += item * ratio  # pellets
 
-            pellets += item * ratio  # pellets
-
-            coal += item * (1 - ratio)  # coal
+                coal += item * (1 - ratio)  # coal
 
         sum += pellets * self.pellet_conversion_factor / 2
         sum += coal * self.coal_conversion_factor / 2
         # print("Coal amount: " + str(coal))
         # print("Pellets amount: " + str(pellets))
-        return sum
+        return sum * 24
 
     def sum_all_fuels(self, days_ago):
+        global burner_name
         gas_value = 0
         pellets_value = 0
         coal_pellets_value = 0
 
         for dict in self.all_fuels_dict:
+            self.start_timer()
             for burner_name in self.all_fuels_dict[dict]:
+
                 curr = 0
                 if dict == 'gasses':
                     gas_value += self.day_sum_gas_consumption(self.all_fuels_dict[dict][burner_name], days_ago)
+
                 elif dict == 'pellets':
-                    pellets_value += self.sum_daily_pellets_consumption()
+                    pellets_value += self.sum_daily_pellets_consumption(days_ago)
                 elif dict == 'coal+pellets':
                     coal_pellets_value += self.sum_daily_coal_and_pellet_consumption(days_ago)
-
+            self.print_elapsed_time(dict + "had " + "number of page calls: " + str(self.page_get_counter))
+        gas_value += self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(
+            days_ago)
         # heat conversion constant and carbon factor
         return gas_value, pellets_value, coal_pellets_value
 
     def get_points_over_time(self, days):
 
-        for i in range(days):
-            print("appended value")
-            values = self.sum_all_fuels(days)
-            self.gas_values.append(values[0])
-            self.pellets_values.append(values[1])
-            self.coal_pellets_values.append(values[2])
+        values = self.sum_all_fuels(days)
+        self.gas_values.append(values[0])
+        self.pellets_values.append(values[1])
+        self.coal_pellets_values.append(values[2])
 
 
 def main():
     read = Reader();
 
-    read.get_points_over_time(5)
-
+    read.get_points_over_time(365)
+    print("Gas values(Kg CO2): "+ str(read.gas_values))
+    print("Pellets values(Kg CO2): " + str(read.pellets_values))
+    print("Coal/Pellets mixture values(Kg CO2): " + str(read.coal_pellets_values))
     #print(str(year_1))
     print("Number of times APi was queried: " + str(read.page_get_counter))
 
