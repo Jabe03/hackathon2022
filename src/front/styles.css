@@ -110,13 +110,13 @@ body {
     margin-left: auto;
     float:left;
     position: absolute;
-    top:120px;
+    top:140px;
     left: 60px;
   }
   .lower{
     display: block;
     margin-left: auto;
     float:left;
-    top:320px;
+    top:340px;
     position: absolute;
   }
