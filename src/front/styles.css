@@ -108,7 +108,7 @@ body {
     margin-left: auto;
     float:left;
     position: absolute;
-    top:150px;
+    top:120px;
     left: 70px;
     margin: auto;
   }
@@ -118,8 +118,8 @@ body {
     display: block;
     margin-left: auto;
     float:left;
-    top:350px;
-    left: 20px;
+    top:355px;
+    left:7px;
     position: absolute;
     margin: auto;
   }
@@ -145,8 +145,8 @@ body {
     transition-duration: 0.4s;
     cursor: pointer;
     position:relative;
-    left: 65px;
-    top: 350px;
+    left: 63px;
+    top: 400px;
   }
   .button4 {
     background-color: white;
