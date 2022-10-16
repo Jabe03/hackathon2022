@@ -119,7 +119,7 @@ body {
     margin-left: auto;
     float:left;
     top:355px;
-    left:7px;
+    left:11px;
     position: absolute;
     margin: auto;
   }
@@ -146,7 +146,7 @@ body {
     cursor: pointer;
     position:relative;
     left: 63px;
-    top: 400px;
+    top: 390px;
   }
   .button4 {
     background-color: white;
