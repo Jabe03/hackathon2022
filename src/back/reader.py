@@ -1,5 +1,4 @@
 import datetime
-import json
 import time
 
 import requests
@@ -13,9 +12,13 @@ class Reader:
     scaled_gas = "PP_TB1_2_WCB3_Scaled_Gas_Flow"
     boiler_12_flow = 'PP_BLR12_FT_006_KSCFH'
 
+    oakdale_engine_values = []
+    oakdale_boiler_values = []
+    normal_gas_values = []
     gas_values = []
     pellets_values = []
     coal_pellets_values = []
+    total_values = []
 
     dates_to_ratio = {
         datetime.datetime(2017, 1, 1): .285,
@@ -213,6 +216,7 @@ class Reader:
             response = self.get_page_json(response["Links"]["RecordedData"].replace('recorded'), recorded_url)
         elif (gas_type == self.gas_points_dict["b11_gas_day"]):
             response = self.get_page_json(response["Links"]["Value"].replace('value', value_url))
+            self.gas_values.append(response['Value']*self.gas_conversion_factor)
             sum += response['Value']
             return sum * self.gas_conversion_factor
         else:
@@ -227,6 +231,7 @@ class Reader:
                 item = 0
 
             sum = sum + (factor * item)
+            self.gas_values.append(item*factor*self.gas_conversion_factor)
 
         # print(gas_type + ": " + str(sum) + "(factor: " + str(factor) + ")")
         # CHANGE
@@ -238,8 +243,7 @@ class Reader:
 
         return result
 
-    def sum_yearly_gas_emissions(self):
-        pass
+
 
     def sum_one_oakdale_boiler(self, boiler, days_ago):
 
@@ -263,8 +267,9 @@ class Reader:
     def sum_oakdale_boilers_daily(self, days_ago):
         sum = 0;
         for boiler in self.oakdale_gas_points_dict:
-            sum += self.sum_one_oakdale_boiler(self.oakdale_gas_points_dict[boiler], days_ago)
-
+            append_sum = self.sum_one_oakdale_boiler(self.oakdale_gas_points_dict[boiler], days_ago)
+            self.oakdale_boiler_values.append(append_sum/0.8*1.07*self.gas_conversion_factor)
+            sum+=append_sum
         return sum / 0.8 * 1.07 * self.gas_conversion_factor
 
     def oakdale_gas_engine_consumption(self, days_ago):
@@ -285,6 +290,7 @@ class Reader:
                 item = 0
 
             sum = sum + item
+            self.oakdale_engine_values.append(item*24*self.gas_conversion_factor)
 
         return sum * 24 * self.gas_conversion_factor
 
@@ -303,6 +309,7 @@ class Reader:
                 item = 0
 
             sum = sum + item
+            self.pellets_values.append(item/2*self.pellet_conversion_factor)
         # print("Thousands of pounds of pellets total: " + str(sum))
         return sum / 2 * self.pellet_conversion_factor * 24
 
@@ -322,6 +329,7 @@ class Reader:
         sum = 0;
         pellets = 0
         coal = 0
+        append_sum = 0;
         for i in range(1, len(items)):
             item = items[i]["Value"]
             date = self.extract_datetime_from_timestamp(items[i]["Timestamp"])
@@ -334,6 +342,9 @@ class Reader:
                 pellets += item * ratio  # pellets
 
                 coal += item * (1 - ratio)  # coal
+                self.coal_pellets_values.append(item*ratio*self.pellet_conversion_factor/2+item*(1-ratio)*self.coal_conversion_factor/2)
+            else:
+                self.coal_pellets_values.append(0)
 
         sum += pellets * self.pellet_conversion_factor / 2
         sum += coal * self.coal_conversion_factor / 2
@@ -353,36 +364,44 @@ class Reader:
 
                 curr = 0
                 if dict == 'gasses':
-                    gas_value += self.day_sum_gas_consumption(self.all_fuels_dict[dict][burner_name], days_ago)
+                    add_value = self.day_sum_gas_consumption(self.all_fuels_dict[dict][burner_name], days_ago)
+                    gas_value += add_value
+                    add_value=0
 
                 elif dict == 'pellets':
-                    pellets_value += self.sum_daily_pellets_consumption(days_ago)
+                    gas_add_value = self.sum_daily_pellets_consumption(days_ago)
+                    pellets_value += gas_add_value
                 elif dict == 'coal+pellets':
-                    coal_pellets_value += self.sum_daily_coal_and_pellet_consumption(days_ago)
+                    add_value = self.sum_daily_coal_and_pellet_consumption(days_ago)
+                    coal_pellets_value += add_value
             self.print_elapsed_time(dict + "had " + "number of page calls: " + str(self.page_get_counter))
-        gas_value += self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(
-            days_ago)
+        gas_value += self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(days_ago)
+
         # heat conversion constant and carbon factor
         return gas_value, pellets_value, coal_pellets_value
 
     def get_points_over_time(self, days):
 
         values = self.sum_all_fuels(days)
-        self.gas_values.append(values[0])
-        self.pellets_values.append(values[1])
-        self.coal_pellets_values.append(values[2])
+
 
 
 def main():
     read = Reader();
 
-    read.get_points_over_time(365)
+    results = read.sum_all_fuels(365)
     print("Gas values(Kg CO2): "+ str(read.gas_values))
     print("Pellets values(Kg CO2): " + str(read.pellets_values))
     print("Coal/Pellets mixture values(Kg CO2): " + str(read.coal_pellets_values))
     #print(str(year_1))
     print("Number of times APi was queried: " + str(read.page_get_counter))
+    print("Yearly gas total "+str(results[0]))
+    print("Yearly pellets total "+str(results[1]))
+    print("Yearly coal/pellets total "+str(results[2]))
+    print("Yearly total energy in MW"+str(read.sum_energy_load()))
+
 
 
 if __name__ == "__main__":
+
     main()
