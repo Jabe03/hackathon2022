@@ -4,6 +4,8 @@ import time
 
 import requests
 
+import matplotlib.pyplot as plt
+
 
 class Reader:
     MISO_key: str = "wPNxKgt4iNxm13Iom2ox8VpnNddbSxRfviLBSBpc"
@@ -177,22 +179,28 @@ class Reader:
             return 1000
         return 1
 
-    def day_sum_gas_consumption(self, gas_type):
+    def day_sum_gas_consumption(self, gas_type,days_ago):
         factor = self.get_factor(gas_type)
-
-        interpolation_url = 'interpolated/?startTime=-1d&endTime=-1d&interval=1h'
+        recorded_url = 'recorded/?startTime=-{}d&endTime=-{}d'.format(days_ago,days_ago+1)
+        interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago,days_ago+1)
+        value_url = 'value/?time=-{}d'.format(days_ago)
         response = self.get_page_json(self.root_url + gas_type)
 
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
         if gas_type[0:2] != "gg":
-            response = self.get_page_json(response["Links"]["InterpolatedData"])
-        else:
-            response = self.get_page_json(response["Links"]["RecordedData"])
+            response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated',interpolation_url))
+        elif gas_type[0:2]=='gg':
+            response = self.get_page_json(response["Links"]["RecordedData"].replace('recorded'),recorded_url)
 
-        if (gas_type == self.gas_points_dict["b11_gas_day"]):
-            sum = response["Items"][0]["Value"] * factor
+        elif (gas_type == self.gas_points_dict["b11_gas_day"]):
+            response = self.get_page_json(response["Links"]["Value"].replace('value', value_url))
+            sum += response['Value']
+            #sum = response["Items"][0]["Value"] * factor
             # print(gas_type + ": " + str(sum) + "(factor: " + str(factor) + ")")
+            print(str('Gas number '+ sum * self.gas_conversion_factor))
             return sum * self.gas_conversion_factor
+        else:
+            pass
 
         items = response["Items"]
         sum = 0;
@@ -204,17 +212,19 @@ class Reader:
 
             sum = sum + (factor * item)
 
-        # print(gas_type + ": " + str(sum) + "(factor: " + str(factor) + ")")
-
-        return sum + self.sum_oakdale_boilers_daily() +self.oakdale_gas_engine_consumption() * self.gas_conversion_factor
+        #print(gas_type + ": " + str(sum) + "(factor: " + str(factor) + ")")
+#CHANGE
+        print('Gas number '+ str((sum + self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(days_ago)) * self.gas_conversion_factor))
+        return (sum + self.sum_oakdale_boilers_daily(days_ago) + self.oakdale_gas_engine_consumption(days_ago)) * self.gas_conversion_factor
 
     def sum_yearly_gas_emissions(self):
         pass
 
-    def sum_one_oakdale_boiler(self, boiler):
+    def sum_one_oakdale_boiler(self, boiler, days_ago):
+        interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago, days_ago + 1)
         response = self.get_page_json(self.root_url + boiler)
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
-        response = self.get_page_json(response["Links"]["InterpolatedData"])
+        response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated', interpolation_url))
         items = response["Items"]
         sum = 0;
         for i in range(1, len(items)):
@@ -226,17 +236,18 @@ class Reader:
             sum = sum + item
         return sum
 
-    def sum_oakdale_boilers_daily(self):
+    def sum_oakdale_boilers_daily(self,days_ago):
         sum = 0;
         for boiler in self.oakdale_gas_points_dict:
-            sum += self.sum_one_oakdale_boiler(self.oakdale_gas_points_dict[boiler])
+            sum += self.sum_one_oakdale_boiler(self.oakdale_gas_points_dict[boiler],days_ago)
 
         return sum / 0.8 * 1.07
 
-    def oakdale_gas_engine_consumption(self):
+    def oakdale_gas_engine_consumption(self,days_ago):
+        interpolated_url='interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago,days_ago+1)
         response = self.get_page_json(self.root_url + "Oak_FIT041")
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
-        response = self.get_page_json(response["Links"]["InterpolatedData"])
+        response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated',interpolated_url))
 
         items = response["Items"]
         sum = 0;
@@ -247,7 +258,6 @@ class Reader:
                 item = 0
 
             sum = sum + item
-        print("gas engine: "+str(sum))
         return sum
 
     def sum_daily_pellets_consumption(self):
@@ -265,7 +275,7 @@ class Reader:
                 item = 0
 
             sum = sum + item
-        print("Thousands of pounds of pellets total: " + str(sum))
+        #print("Thousands of pounds of pellets total: " + str(sum))
         return sum / 2 * self.pellet_conversion_factor
 
     def extract_datetime_from_timestamp(self, timestamp: str):
@@ -274,11 +284,11 @@ class Reader:
         day = int(timestamp[8:10])
         return datetime.datetime(year, month, day)
 
-    def sum_daily_coal_and_pellet_consumption(self):
-
+    def sum_daily_coal_and_pellet_consumption(self,days_ago):
+        interpolation_url = 'interpolated/?startTime=-{}d&endTime=-{}d&interval=1h'.format(days_ago,days_ago+1)
         response = self.get_page_json(self.root_url + "PP_SF-WIT-6044A")
         response = self.get_page_json(response["Items"][0]["Links"]["Self"])
-        response = self.get_page_json(response["Links"]["InterpolatedData"])
+        response = self.get_page_json(response["Links"]["InterpolatedData"].replace('interpolated',interpolation_url))
 
         items = response["Items"]
         sum = 0;
@@ -298,32 +308,69 @@ class Reader:
 
         sum += pellets * self.pellet_conversion_factor / 2
         sum += coal * self.coal_conversion_factor / 2
-        print("Coal amount: " + str(coal))
-        print("Pellets amount: " + str(pellets))
+        #print("Coal amount: " + str(coal))
+        #print("Pellets amount: " + str(pellets))
         return sum
 
-    def sum_all_fuels(self):
+    def sum_all_fuels(self,days_ago):
         i = 0
         sum = 0
+        gas_value=0
+        pellets_value=0
+        coal_pellets_value=0
+        all
         for dict in self.all_fuels_dict:
-            print(dict)
+
+
             for burner_name in self.all_fuels_dict[dict]:
+                curr = 0
                 if dict == 'gasses':
-                    sum = sum + self.day_sum_gas_consumption(self.all_fuels_dict[dict][burner_name])
+                    gas_value=self.day_sum_gas_consumption(self.all_fuels_dict[dict][burner_name],days_ago)
                 elif dict == 'pellets':
-                    sum += self.sum_daily_pellets_consumption()
+                    pellets_value=self.sum_daily_pellets_consumption()
                 elif dict == 'coal+pellets':
-                    sum += self.sum_daily_coal_and_pellet_consumption()
+                    coal_pellets_value= self.sum_daily_coal_and_pellet_consumption(days_ago)
+                print(curr)
 
 
         # heat conversion constant and carbon factor
-        return sum
+        return gas_value,pellets_value,coal_pellets_value
+
+    def get_points_over_time(self,days):
+        gas_values = []
+        pellets_values = []
+        coal_pellets_values = []
+        for i in range(days):
+            values = self.sum_all_fuels(days)
+            gas_values.append(values[0])
+            pellets_values.append(values[1])
+            coal_pellets_values.append(values[2])
+        return gas_values,pellets_values,coal_pellets_values
+
+
 
 
 def main():
     read = Reader();
 
-    print(read.sum_all_fuels())
+    print(read.sum_all_fuels(10))
+    fig, ax = plt.subplots()
+
+    year_1 = [2016, 2017, 2018, 2019, 2020, 2021]
+    population_1 = [42, 43, 45, 47, 48, 50]
+
+    year_2 = [2016, 2017, 2018, 2019, 2020, 2021]
+    population_2 = [43, 43, 44, 44, 45, 45]
+
+    plt.plot(year_1, population_1, marker='o', linestyle='--', color='g', label='Country 1')
+    plt.plot(year_2, population_2, marker='d', linestyle='-', color='r', label='Country 2')
+
+    plt.xlabel('Year')
+    plt.ylabel('Population (M)')
+    plt.title('Year vs Population')
+    plt.legend(loc='lower right')
+
+    fig
     # print(str)
 
 
