@@ -4,6 +4,7 @@ body {
     background-attachment: fixed;  
     background-size: cover;
   }
+  
   .img{
     position:"absolute";
     max-width: 100%;
@@ -81,15 +82,7 @@ body {
     font-stretch: ultra-expanded;
     font-family: Impact, fantasy
   }
-  
-  a{
-    text-align: center;
-    color: black;
-    font-weight:900;
-    font-stretch: ultra-expanded;
-    font-family: Impact, fantasy
-  }
-  
+
   .center {
     display: block;
     margin-left: auto;
@@ -97,6 +90,8 @@ body {
     width: 50%;
   }
 
+
+  /*Globe*/
   .right{
     display: block;
     margin-right: auto;
@@ -107,6 +102,7 @@ body {
     margin: auto;
   }
 
+  /*Title Project Description*/
   .left{
     display: block;
     margin-left: auto;
@@ -116,6 +112,8 @@ body {
     left: 70px;
     margin: auto;
   }
+
+  /*Subtitle Project Description*/
   .lower{
     display: block;
     margin-left: auto;
@@ -125,7 +123,7 @@ body {
     position: absolute;
     margin: auto;
   }
-
+/*ENGIE Logo*/
   .logo{
     margin-left: auto;
     float:left;
@@ -133,4 +131,31 @@ body {
     right: 20px;
     position: absolute;
     margin: auto;
+  }
+
+/*Facility Button*/
+  .FacilityButton{
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 6px 10px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    position:relative;
+    left: 65px;
+    top: 350px;
+  }
+  .button4 {
+    background-color: white;
+    color: black;
+    border: 2px solid #5a49e4;
+    border-radius: 12px;
+  }
+  
+  .button4:hover {
+    background-color: #5a49e4;
+    color: white;
   }
