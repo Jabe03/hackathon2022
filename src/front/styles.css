@@ -4,7 +4,7 @@ body {
     background-attachment: fixed;  
     background-size: cover;
   }
-  img{
+  .img{
     position:"absolute";
     max-width: 100%;
     height: auto;
@@ -89,4 +89,9 @@ body {
     font-family: Impact, fantasy
   }
   
-  
+  .center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+  }
