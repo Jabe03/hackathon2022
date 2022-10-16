@@ -152,3 +152,33 @@ body {
     background-color: #5a49e4;
     color: white;
   }
+
+  .graph1{
+    display: block;
+    margin-left: auto;
+    float:left;
+    position: absolute;
+    top:400px;
+    left: 350px;
+    margin: auto;
+  }
+
+  .graph2{
+    display: block;
+    margin-left: auto;
+    float:left;
+    position: absolute;
+    top:500px;
+    left: 350px;
+    margin: auto;
+  }
+
+  .graph3{
+    display: block;
+    margin-left: auto;
+    float:left;
+    position: absolute;
+    top:500px;
+    left: 350px;
+    margin: auto;
+  }
